@@ -1,0 +1,115 @@
+repos:
+  ##############################################################################
+  #  General checks
+  ##############################################################################
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: forbid-new-submodules
+      - id: fix-encoding-pragma
+        args: [--remove]
+      - id: end-of-file-fixer
+        types_or: [python, cython, rust]
+      - id: trailing-whitespace
+        types_or: [python, cython]
+      - id: debug-statements
+      - id: detect-private-key
+      - id: check-builtin-literals
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-xml
+      - id: check-yaml
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.4
+    hooks:
+      - id: codespell
+        description: Checks for common misspellings.
+        types_or: [python, cython, rst, markdown]
+        args: ["-L", "ot,zar,warmup"]
+
+  ##############################################################################
+  #  Rust formatting and linting
+  ##############################################################################
+  - repo: local
+    hooks:
+      - id: fmt
+        name: cargo fmt
+        description: Format files with cargo fmt.
+        entry: cargo fmt
+        language: system
+        types: [rust]
+        args: ["--manifest-path", "nautilus_core/Cargo.toml", "--all", "--", "--check"]
+        files: \.rs$
+        pass_filenames: false
+      - id: cargo-clippy
+        name: cargo clippy
+        description: Run the Clippy linter on the package.
+        entry: cargo clippy
+        language: system
+        types: [rust]
+        args: ["--manifest-path", "nautilus_core/Cargo.toml", "--", "-D", "warnings"]
+        files: \.rs$
+        pass_filenames: false
+
+  ##############################################################################
+  #  Python/Cython formatting and linting
+  ##############################################################################
+  - repo: https://github.com/asottile/add-trailing-comma
+    rev: v2.4.0
+    hooks:
+      - id: add-trailing-comma
+        name: add-trailing-comma
+        types: [python]
+
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+      - id: black
+        types_or: [python, pyi]
+        entry: "black"
+        args: ["--config", "pyproject.toml"]
+        exclude: "docs/_pygments/monokai.py"
+
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.269
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        name: isort (cython)
+        types_or: [cython]
+        entry: "isort"
+        args: ["--settings-file", "pyproject.toml"]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.3.0
+    hooks:
+      - id: mypy
+        args: [
+          --ignore-missing-imports,
+          --allow-incomplete-defs,
+          --no-strict-optional,  # Fixing in progress
+          --warn-no-return,
+        ]
+        additional_dependencies: [
+          msgspec,
+          types-frozendict,
+          types-pytz,
+          types-redis,
+          types-requests,
+          types-toml,
+        ]
+
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.6.1
+    hooks:
+      - id: nbstripout
